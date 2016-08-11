@@ -10,24 +10,39 @@ import Clang.Type (getTypeSpelling)
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
+import Data.Maybe
 import Data.Tree
 import Data.Vector.Storable (toList)
 import System.Environment
+import System.FilePath.Find (find, always, fileName, (~~?))
+import Data.Foldable (fold)
 
 main :: IO ()
 main = do
   args <- getArgs
-  let filename = head args
-  parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record"] (\ s -> do
-    c <- getCursor s
-    mdl <- topMacroDefList c
-    sdl <- topStructDeclList c
-    tree <- toTree c
-    liftIO $ putStrLn (drawTree tree)
-    liftIO $ print mdl
-    liftIO $ print sdl
-    )
-  return ()
+  let [pat, filename] = args
+  lists <- getLists2 pat filename
+  print lists
+
+getLists2 :: String -> String -> IO ([String], [String])
+getLists2 pat filename = do
+  files <- liftIO $ find always (fileName ~~? pat) filename
+  lists <- mapM getLists files
+  return (fold lists)
+
+getLists :: String -> IO ([String], [String])
+getLists filename = do
+    putStrLn ("parsing " ++ filename)
+    lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record"] (\ s -> do
+      c <- getCursor s
+      -- tree <- toTree c
+      -- liftIO $ putStrLn (drawTree tree)
+      mdl <- topMacroDefList c
+      sdl <- topStructDeclList c
+      return (mdl, sdl)
+      )
+    return (fromMaybe (error filename) lists)
+
 
 toTree :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m (Tree String)
 toTree c = do
