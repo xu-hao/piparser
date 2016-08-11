@@ -28,7 +28,9 @@ getLists2 :: String -> String -> IO ([String], [String])
 getLists2 pat filename = do
   files <- liftIO $ find always (fileName ~~? pat) filename
   lists <- mapM getLists files
-  return (fold lists)
+  let (mdl, sdl) = fold lists
+  let sdl2 = filter (\s -> s ++ "_PI" `elem` mdl) sdl
+  return (mdl, sdl2)
 
 getLists :: String -> IO ([String], [String])
 getLists filename = do
@@ -72,4 +74,4 @@ topStructDeclList c = do
   sdl <- mapM (getSpelling >=> unpack) (filter (\ c -> case getKind c of
               StructDeclCursor -> True
               _ -> False) clist)
-  return (filter (\s -> drop (length s - 2) s == "_t") sdl)
+  return sdl
