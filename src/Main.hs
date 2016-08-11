@@ -16,6 +16,7 @@ import Data.Vector.Storable (toList)
 import System.Environment
 import System.FilePath.Find (find, always, fileName, (~~?))
 import Data.Foldable (fold)
+import Data.List (nub)
 
 main :: IO ()
 main = do
@@ -30,7 +31,7 @@ getLists2 pat filename = do
   lists <- mapM getLists files
   let (mdl, sdl) = fold lists
   let sdl2 = filter (\s -> s ++ "_PI" `elem` mdl) sdl
-  return (mdl, sdl2)
+  return (nub mdl, nub sdl2)
 
 getLists :: String -> IO ([String], [String])
 getLists filename = do
