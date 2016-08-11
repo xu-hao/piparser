@@ -1,10 +1,13 @@
-#include <stdio>
+#include <stdio.h>
 
-struct s {
+#define s_PI ""
+
+struct s_t {
   int a;
-  char[1024] b;
+  char b[1024];
   char *c;
-}
+};
+
 int main() {
   printf("Hello World!");
 }
