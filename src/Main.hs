@@ -22,7 +22,7 @@ import Data.Foldable (fold)
 import Data.List (nub, partition)
 import System.IO
 import qualified Data.ByteString.Char8 as BS
-import Data.Map (Map, fromList, member, partitionWithKey)
+import Data.Map (Map, fromList, member, partitionWithKey, keys)
 
 main :: IO ()
 main = do
@@ -32,11 +32,11 @@ main = do
   let (mdl1, mdl2) = partitionWithKey (\k a -> k `elem` map (++ "_PI") sdl) mdl
   let (mdl3, mdl4) = partitionWithKey (\k a -> k `elem` map (++ "_PI") tdl) mdl2
   putStrLn "macro with struct decl"
-  print mdl1
+  print (keys mdl1)
   putStrLn "macro with typedef"
-  print mdl3
+  print (keys mdl3)
   putStrLn "other macro"
-  print mdl4
+  print (keys mdl4)
 
 getLists2 :: String -> String -> IO (Map String String, [String], [String])
 getLists2 pat filename = do
