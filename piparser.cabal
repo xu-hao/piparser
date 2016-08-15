@@ -23,6 +23,7 @@ executable piparser
                     ,  transformers
                     ,  vector
                     ,  filemanip
+                    ,  bytestring
   default-language:    Haskell2010
 
 
