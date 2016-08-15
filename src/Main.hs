@@ -52,8 +52,8 @@ getLists filename = do
     putStrLn ("parsing " ++ filename)
     lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record"] (\ s -> do
       c <- getCursor s
-      tree <- toTree filename c
-      liftIO $ putStrLn (drawTree tree)
+      -- tree <- toTree filename c
+      -- liftIO $ putStrLn (drawTree tree)
       mdl <- topMacroDefList filename c
       sdl <- topStructDeclList c
       tdl <- topTypedefDeclList c
