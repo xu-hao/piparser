@@ -31,8 +31,11 @@ main = do
   (mdl, sdl, tdl) <- getLists2 pat filename
   let (mdl1, mdl2) = partitionWithKey (\k a -> k `elem` map (++ "_PI") sdl) mdl
   let (mdl3, mdl4) = partitionWithKey (\k a -> k `elem` map (++ "_PI") tdl) mdl2
+  putStrLn "macro with struct decl"
   print mdl1
+  putStrLn "macro with typedef"
   print mdl3
+  putStrLn "other macro"
   print mdl4
 
 getLists2 :: String -> String -> IO (Map String String, [String], [String])
