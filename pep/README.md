@@ -28,7 +28,7 @@ In the `pep` directory, run
 
 ### General usage
 
-To generate signatures, see next section.
+To generate signatures for iRODS plugin operations, see next section.
 
     piparser <output file> (<sigature group name> <file pattern> <directory> <prefix> <function prefix>)*
 
