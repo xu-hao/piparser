@@ -17,15 +17,11 @@ import Control.Monad.IO.Class
 import Data.Maybe
 import Data.Tree
 import Data.Vector.Storable (toList)
-import System.Environment
-import System.FilePath.Find (find, always, fileName, (~~?))
-import Data.Foldable (fold)
-import Data.List (nub, partition, intercalate)
+import Data.List (intercalate)
 import System.IO
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
-import Data.Char
 
 getStringLiteral :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m String
 getStringLiteral filename strc = do

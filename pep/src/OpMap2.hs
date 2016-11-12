@@ -11,17 +11,10 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Maybe
-import Data.Tree
 import Data.Vector.Storable (toList)
-import System.Environment
-import System.FilePath.Find (find, always, fileName, (~~?))
-import Data.Foldable (fold)
-import Data.List (nub, partition, intercalate)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
-import DataTypes
 import ClangUtils
-import Data.Char
 
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)

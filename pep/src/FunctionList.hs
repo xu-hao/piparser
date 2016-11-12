@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module FunctionList where
 
@@ -14,24 +14,17 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Maybe
-import Data.Tree
 import Data.Vector.Storable (toList)
 import System.Environment
 import System.FilePath.Find (find, always, fileName, (~~?))
-import Data.Foldable (fold)
-import Data.List (nub, partition, intercalate)
 import System.IO
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys, (!), mapWithKey)
-import Text.Regex.TDFA
-import Data.Aeson
-import GHC.Generics
 
 topMacroDefList :: (ClangBase m, MonadIO m) => FilePath -> Cursor s' -> ClangT s m (Map String String)
 topMacroDefList fp c = do
-  cl <- getChildren c
-  let clist = toList cl
+  clist <- toList <$> getChildren c
   mdl <- mapM (\c -> do
     key <- getSpelling c >>= unpack
     extent <- getExtent c
@@ -51,8 +44,7 @@ topMacroDefList fp c = do
 
 topStructDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [String]
 topStructDeclList c = do
-  cl <- getChildren c
-  let clist = toList cl
+  clist <- toList <$> getChildren c
   sdl <- mapM (getSpelling >=> unpack) (filter (\ c -> case getKind c of
               StructDeclCursor -> True
               _ -> False) clist)
@@ -60,8 +52,7 @@ topStructDeclList c = do
 
 topTypedefDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [String]
 topTypedefDeclList c = do
-  cl <- getChildren c
-  let clist = toList cl
+  clist <- toList <$> getChildren c
   sdl <- mapM (getSpelling >=> unpack) (filter (\ c -> case getKind c of
               TypedefDeclCursor -> True
               _ -> False) clist)
@@ -70,14 +61,7 @@ topTypedefDeclList c = do
 
 topFuncDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [Cursor s]
 topFuncDeclList c = do
-  cl <- getChildren c
-  let clist = toList cl
-  let flat clist =
-          concat <$> mapM (\ c -> case getKind c of
-              FunctionDeclCursor -> return [c]
-              -- PreprocessingDirectiveCursor -> do
-              --     children <- getChildren c
-              --     let childList = toList children
-              --     flat childList
-              _ -> return []) clist
-  flat clist
+  clist <- toList <$> getChildren c
+  return (filter (\ c -> case getKind c of
+      FunctionDeclCursor -> True
+      _ -> False) clist)
