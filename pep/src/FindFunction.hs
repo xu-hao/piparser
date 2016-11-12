@@ -1,13 +1,10 @@
 {-# LANGUAGE FlexibleContexts, DeriveGeneric #-}
 
-module FindFunction where
+module FindFunction (getSigGroup) where
 
 import Clang
 import Clang.TranslationUnit (getCursor)
 import Clang.Cursor
-import Clang.File (getName)
-import Clang.Location (getFileLocation)
-import Clang.Range
 import Clang.String
 import Clang.Type (getTypeSpelling)
 import Control.Applicative
@@ -28,8 +25,8 @@ import FunctionList
 import DataTypes
 
 
-getLists2 :: String -> String -> String -> Map String String -> Map String String -> IO SigGroup
-getLists2 group pat filename opmap constmap = do
+getSigGroup :: String -> String -> String -> Map String String -> Map String String -> IO SigGroup
+getSigGroup group pat filename opmap constmap = do
   files <- liftIO $ find always (fileName ~~? pat) filename
   sdl <- mapM (getLists opmap constmap) files
   return (SigGroup group (fold sdl))

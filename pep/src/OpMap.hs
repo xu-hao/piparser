@@ -1,16 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module OpMap where
+module OpMap (getOpMap) where
 
 import Clang
-import Clang.TranslationUnit (getCursor, getDiagnosticSet)
+import Clang.TranslationUnit (getCursor)
 import Clang.Cursor
-import Clang.File (getName)
-import Clang.Location (getFileLocation)
-import Clang.Range
 import Clang.String
 import Clang.Type (getTypeSpelling)
-import qualified Clang.Diagnostic as CD
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
@@ -18,15 +14,12 @@ import Data.Maybe
 import Data.Tree
 import Data.Vector.Storable (toList)
 import System.Environment
-import System.FilePath.Find (find, always, fileName, (~~?))
 import Data.Foldable (fold)
 import Data.List (nub, partition, intercalate)
 import System.IO
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import DataTypes
-import Tree
+import ClangUtils
 import Data.Char
 
 
@@ -56,14 +49,8 @@ getOpMap :: String -> IO (Map String String)
 getOpMap filename = do
     putStrLn ("parsing " ++ filename ++ " for operation map")
     lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record", "-DRODS_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-I/opt/irods-externals/jansson2.7-0/include", "-std=c++11"] (\ s -> do
-      ds <- getDiagnosticSet s
-      dsel <- CD.getElements ds
-      mapM_ (\d -> do
-                sp <- CD.getSpelling d >>= unpack
-                liftIO $ putStrLn sp
-                ) dsel
-      cl <- getDeclarations s
-      let sdl = toList cl
+      printDiagnostics s
+      sdl <- toList <$> getDeclarations s
       let sdl1 = filter (\c -> case getKind c of
                                 FunctionDeclCursor -> True
                                 _ -> False) sdl
