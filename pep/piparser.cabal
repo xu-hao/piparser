@@ -25,7 +25,6 @@ executable piparser
                     ,  filemanip
                     ,  bytestring
                     ,  regex-tdfa
-                    ,  cases
                     ,  text
                     ,  aeson
   default-language:    Haskell2010

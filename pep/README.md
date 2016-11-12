@@ -30,12 +30,15 @@ In the `pep` directory, run
 
 (To generate signatures for iRODS plugin operations, see next section.)
 
-    piparser <output file> (<sigature group name> <file pattern> <directory> <prefix> <function prefix>)*
+    piparser <output file> (<sigature group name> <signature group type> <file pattern> <directory> <op file> <const file>)*
 
-It looks for all files matching `<file pattern>` in the `<directory>`. Inside those files, it looks for functions with `<function prefix>` and replaces it with `<prefix>`.
+`<signature group type>` can be `api` or `<empty string>`.
+It builds a const map of op to op name from `<const file>`.
+It builds an op map of function name to op from `<op file>`.
+It looks for all files matching `<file pattern>` in the `<directory>`. Inside those files, it looks for functions in the op map.
 
 ### Generate signatures
 
-Assuming that iRODS source code is in the `../irods` directory, or replace `../irods` with the directory where iRODS source code is in the following command.
+Assuming that iRODS source code is in the `../../irods` directory, or replace `../../irods` with the directory where iRODS source code is in the following command.
 
-    dist/build/piparser/piparser out.json auth "*.cpp" ../irods/plugins/auth/native/ auth_ native_auth_ resource "*.cpp" ../irods/plugins/resources/unixfilesystem/ resource_ unix_file_ database "db_plugin.cpp" ../irods/plugins/database/src/ db_ db_ network "*.cpp" ../irods/plugins/network/tcp/ network_ tcp_ api "rs*.cpp" ../irods/server/api/src/ "" rs
+    dist/build/piparser/piparser out.json auth "" "*.cpp" ../../irods/plugins/auth/native/ ../../irods/plugins/auth/native/libnative.cpp ../../irods/lib/core/include/irods_auth_constants.hpp resource "" "*.cpp" ../../irods/plugins/resources/unixfilesystem/ ../../irods/plugins/resources/unixfilesystem/libunixfilesystem.cpp ../../irods/server/core/include/irods_resource_constants.hpp database "" "db_plugin.cpp" ../../irods/plugins/database/src/ ../../irods/plugins/database/src/db_plugin.cpp ../../irods/server/core/include/irods_database_constants.hpp network "" "*.cpp" ../../irods/plugins/network/tcp/ ../../irods/plugins/network/tcp/libtcp.cpp ../../irods/lib/core/include/irods_network_constants.hpp api api "rs*.cpp" ../../irods/server/api/src/ ../../irods/lib/api/include/apiTable.hpp ""
