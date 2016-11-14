@@ -15,24 +15,20 @@ import OpMap
 import OpMap2
 import FindFunction
 
-chop :: Int -> [a] -> [[a]]
-chop _ [] = []
-chop n l = take n l : chop n (drop n l)
-
 main :: IO ()
 main = do
-  (out : args) <- getArgs
-  let argss = chop 6 args
-  sdl <- mapM (\[group, ty, pat, filename, opfile, constfile] -> do
-              print [group, ty, pat, filename, opfile, constfile]
+  [args] <- getArgs
+  ps <- fromJust . decode <$> B.readFile args
+  sdl <- mapM (\p@(InpParam group ty pat filename opfile constfile) -> do
+              print p
               case ty of
                   "api" -> do
-                      opmap <- getOpMap2 opfile
+                      opmap <- getOpMap2 ps opfile
                       let constmap = mapWithKey (\k _ -> k) opmap
-                      getSigGroup group pat filename opmap constmap
+                      getSigGroup ps group pat filename opmap constmap
                   _ -> do
-                      opmap <- getOpMap opfile
-                      constmap <- getConstMap constfile
-                      getSigGroup group pat filename opmap constmap) argss
+                      opmap <- getOpMap ps opfile
+                      constmap <- getConstMap ps constfile
+                      getSigGroup ps group pat filename opmap constmap) (groupList ps)
 
-  B.writeFile out (encode (SigGroupList sdl))
+  B.writeFile (out ps) (encode (SigGroupList sdl))

@@ -16,6 +16,7 @@ import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import ClangUtils
 import Templates
+import DataTypes
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)
 toMap filename c = do
@@ -38,15 +39,15 @@ toMap filename c = do
     function <- getSpelling func8 >>= unpack
     return (op, function)
 
-getOpMap2 :: String -> IO (Map String String)
-getOpMap2 filename = do
+getOpMap2 :: InpParams -> String -> IO (Map String String)
+getOpMap2 ps filename = do
     putStrLn ("parsing " ++ filename ++ " for operation map")
-    lists <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-DCREATE_API_TABLE_FOR_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-I/opt/irods-externals/jansson2.7-0/include", "-std=c++11"] (\ s -> do
+    lists <- parseSourceFile filename (["-Xclang", "-DRODS_SERVER", "-DCREATE_API_TABLE_FOR_SERVER", "-std=c++11"] ++ map ("-I" ++) (headers ps)) (\ s -> do
       printDiagnostics s
       c <- getCursor s
       chl <- toList <$> getChildren c
       let chl2 = $(filterByKind [p|VarDeclCursor|] [|chl|])
-      [sdl2] <- $(filterBySpelling [p|"server_api_table_inp"|] [|chl2|]) 
+      [sdl2] <- $(filterBySpelling [p|"server_api_table_inp"|] [|chl2|])
       [_, _, sdl3] <- toList <$> (getChildren sdl2)
       [sdl4] <- toList <$> (getChildren sdl3)
       sdl5 <- toList <$> (getChildren sdl4)

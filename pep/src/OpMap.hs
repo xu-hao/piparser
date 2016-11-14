@@ -16,6 +16,7 @@ import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import ClangUtils
 import Templates
+import DataTypes
 
 
 toMap :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m (String, String)
@@ -40,10 +41,10 @@ toMap c = do
       else do
         return ("", "")
 
-getOpMap :: String -> IO (Map String String)
-getOpMap filename = do
+getOpMap :: InpParams -> String -> IO (Map String String)
+getOpMap ps filename = do
     putStrLn ("parsing " ++ filename ++ " for operation map")
-    lists <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-std=c++11"] (\ s -> do
+    lists <- parseSourceFile filename (["-Xclang", "-DRODS_SERVER", "-std=c++11"] ++ map ("-I" ++) (headers ps)) (\ s -> do
       printDiagnostics s
       sdl <- toList <$> getDeclarations s
       let sdl1 = $(filterByKind [p|FunctionDeclCursor|] [|sdl|])

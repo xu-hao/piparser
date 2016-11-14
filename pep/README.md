@@ -32,7 +32,24 @@ In the `pep` directory, run
 
 (To generate signatures for iRODS plugin operations, see next section.)
 
-    piparser <output file> (<sigature group name> <signature group type> <file pattern> <directory> <op file> <const file>)*
+    piparser <input file>
+
+Input file format:
+
+    {
+      "headers" : [<include path>],
+      "out" : <output file>,
+      "groupList" : [
+        {
+          "name" : <sigature group name>,
+          "ty" : <signature group type>,
+          "pattern" : <file pattern>,
+          "directory" : <directory>,
+          "opFile" : <op file>,
+          "constFile" : <const file>
+        }
+      ]
+    }
 
 `<signature group type>` can be `api` or `<empty string>`.
 In the general case, it builds a const map of op to op name from `<const file>` and an op map of op to function name from `<op file>`.
@@ -41,6 +58,6 @@ It looks for all files matching `<file pattern>` in the `<directory>`. Inside th
 
 ### Generate signatures
 
-Assuming that iRODS source code is in the `../../irods` directory, or replace `../../irods` with the directory where iRODS source code is in the following command.
+Assuming that iRODS source code is in the `../../irods` directory, or replace `../../irods` with the directory where iRODS source code is in `test/inp.json`.
 
-    dist/build/piparser/piparser out.json auth "" "*.cpp" ../../irods/plugins/auth/native/ ../../irods/plugins/auth/native/libnative.cpp ../../irods/lib/core/include/irods_auth_constants.hpp resource "" "*.cpp" ../../irods/plugins/resources/unixfilesystem/ ../../irods/plugins/resources/unixfilesystem/libunixfilesystem.cpp ../../irods/server/core/include/irods_resource_constants.hpp database "" "db_plugin.cpp" ../../irods/plugins/database/src/ ../../irods/plugins/database/src/db_plugin.cpp ../../irods/server/core/include/irods_database_constants.hpp network "" "*.cpp" ../../irods/plugins/network/tcp/ ../../irods/plugins/network/tcp/libtcp.cpp ../../irods/lib/core/include/irods_network_constants.hpp api api "rs*.cpp" ../../irods/server/api/src/ ../../irods/lib/api/include/apiTable.hpp ""
+    dist/build/piparser/piparser test/inp.json

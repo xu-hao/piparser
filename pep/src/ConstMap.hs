@@ -15,8 +15,9 @@ import Data.Vector.Storable (toList)
 import Data.List (nub, partition, intercalate)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
-import ClangUtils
 import Data.Char
+import ClangUtils
+import DataTypes
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)
 toMap filename c = do
@@ -28,10 +29,10 @@ toMap filename c = do
     strlit <- getStringLiteral filename strc
     return (sp, strlit)
 
-getConstMap :: String -> IO (Map String String)
-getConstMap filename = do
+getConstMap :: InpParams -> String -> IO (Map String String)
+getConstMap ps filename = do
     putStrLn ("parsing " ++ filename ++ " for constant map")
-    lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record", "-DRODS_SERVER", "-I/usr/include/irods"] (\ s -> do
+    lists <- parseSourceFile filename (["-Xclang", "-detailed-preprocessing-record", "-DRODS_SERVER"] ++ map ("-I" ++) (headers ps)) (\ s -> do
       printDiagnostics s
       sdl <- toList <$> getDeclarations s
       let sdl1 = filter (\c -> case getKind c of

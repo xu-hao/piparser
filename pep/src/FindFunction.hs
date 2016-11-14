@@ -22,10 +22,10 @@ import FunctionList
 import DataTypes
 
 
-getSigGroup :: String -> String -> String -> Map String String -> Map String String -> IO SigGroup
-getSigGroup group pat filename opmap constmap = do
+getSigGroup :: InpParams -> String -> String -> String -> Map String String -> Map String String -> IO SigGroup
+getSigGroup ps group pat filename opmap constmap = do
   files <- liftIO $ find always (fileName ~~? pat) filename
-  sdl <- mapM (getLists opmap constmap) files
+  sdl <- mapM (getLists ps opmap constmap) files
   return (SigGroup group (fold sdl))
 
 toSig :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m Sig
@@ -36,11 +36,11 @@ toSig op c = do
   argtypes <- mapM (getArgument c >=> getType >=> getTypeSpelling >=> unpack ) [0..n-1]
   return (Sig op (zipWith Param argtypes args))
 
-getLists :: Map String String -> Map String String -> String -> IO [Sig]
-getLists opmap constmap filename = do
+getLists :: InpParams -> Map String String -> Map String String -> String -> IO [Sig]
+getLists ps opmap constmap filename = do
     let opfunctions = toList opmap
     putStrLn ("parsing " ++ filename)
-    lists <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-I/usr/include/irods"] (\ s -> do
+    lists <- parseSourceFile filename (["-Xclang", "-DRODS_SERVER"] ++ map ("-I" ++) (headers ps)) (\ s -> do
       c <- getCursor s
       sdl <- topFuncDeclList c
       sdl1 <- filterM isDefinition sdl
