@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
-module FunctionList where
+module PIParser.FunctionList where
 
 import Clang
 import Clang.TranslationUnit (getCursor)
@@ -15,13 +15,11 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Maybe
 import Data.Vector.Storable (toList)
-import System.Environment
-import System.FilePath.Find (find, always, fileName, (~~?))
 import System.IO
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys, (!), mapWithKey)
-import Templates
+import PIParser.Templates
 
 topMacroDefList :: (ClangBase m, MonadIO m) => FilePath -> Cursor s' -> ClangT s m (Map String String)
 topMacroDefList fp c = do

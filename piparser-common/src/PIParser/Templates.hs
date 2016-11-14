@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Templates where
+module PIParser.Templates where
 
 import Clang
 import Clang.TranslationUnit (getCursor, getDiagnosticSet)

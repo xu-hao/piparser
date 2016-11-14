@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
-module OpMap2 (getOpMap2) where
+module PIParser.PEP.OpMap2 (getOpMap2) where
 
 import Clang
 import Clang.TranslationUnit (getCursor, getDiagnosticSet)
@@ -14,9 +14,9 @@ import Data.Maybe
 import Data.Vector.Storable (toList)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
-import ClangUtils
-import Templates
-import DataTypes
+import PIParser.ClangUtils
+import PIParser.Templates
+import PIParser.DataTypes
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)
 toMap filename c = do

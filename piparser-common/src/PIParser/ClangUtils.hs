@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, RankNTypes #-}
 
-module ClangUtils where
+module PIParser.ClangUtils where
 
 import Clang
 import Clang.TranslationUnit (getCursor, getDiagnosticSet)
@@ -22,6 +22,7 @@ import System.IO
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
+import PIParser.DataTypes
 
 getStringLiteral :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m String
 getStringLiteral filename strc = do
@@ -55,7 +56,7 @@ toTree fp c = do
           argtypes <- mapM (getArgument c >=> getType >=> getTypeSpelling >=> unpack ) [0..n-1]
           return (show (zip args argtypes))
       FieldDeclCursor -> getType c >>= getTypeSpelling >>= unpack
-      StringLiteralCursor -> return "string"
+      StringLiteralCursor -> getStringLiteral fp c
       MacroDefinitionCursor -> do
         extent <- getExtent c
         st <- getStart extent
@@ -69,16 +70,14 @@ toTree fp c = do
       _ -> return ""
   Node (show s ++ " " ++ show p ++ " " ++ t) <$> mapM (toTree fp) clist
 
-printTree :: FilePath -> IO String
-printTree filename = do
-  t <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-DCREATE_API_TABLE_FOR_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-I/opt/irods-externals/jansson2.7-0/include", "-std=c++11"] (\ s -> do
+showTree :: InpParams -> FilePath -> (forall s' s m . (ClangBase m, MonadIO m) => FilePath -> Cursor s' -> ClangT s m Bool) -> IO String
+showTree ps filename p = do
+  t <- parseSourceFile filename (["-Xclang", "-DRODS_SERVER", "-DCREATE_API_TABLE_FOR_SERVER", "-std=c++11"] ++ map ("-I" ++) (headers ps)) (\ s -> do
     printDiagnostics s
     c <- getCursor s
     chl <- toList <$> getChildren c
-    let chl2 = filter (\c -> case getKind c of
-                      VarDeclCursor -> True
-                      _ -> False) chl
-    chl3 <- mapM (toTree filename >=> return . drawTree) chl2
-    return (intercalate "\n" chl3)
+    chl2 <- filterM (\c -> p filename c) chl
+    t <- mapM (toTree filename) chl2
+    return (intercalate "\n" (map drawTree t))
     )
   return (fromMaybe (error filename) t)

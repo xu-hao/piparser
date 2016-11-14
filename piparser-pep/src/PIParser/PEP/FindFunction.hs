@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module FindFunction (getSigGroup) where
+module PIParser.PEP.FindFunction (getSigGroup) where
 
 import Clang
 import Clang.TranslationUnit (getCursor)
@@ -18,8 +18,10 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys, (!), mapWithKey, toList)
 import Text.Regex.TDFA
-import FunctionList
-import DataTypes
+import PIParser.FunctionList
+import PIParser.DataTypes (Sig(..), Param(..), InpParams(..))
+import PIParser.PEP.DataTypes (SigGroup(..))
+import PIParser.Function
 
 
 getSigGroup :: InpParams -> String -> String -> String -> Map String String -> Map String String -> IO SigGroup
@@ -27,14 +29,6 @@ getSigGroup ps group pat filename opmap constmap = do
   files <- liftIO $ find always (fileName ~~? pat) filename
   sdl <- mapM (getLists ps opmap constmap) files
   return (SigGroup group (fold sdl))
-
-toSig :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m Sig
-toSig op c = do
-  name <- getSpelling c >>= unpack
-  n <- getNumArguments c
-  args <- mapM (getArgument c >=> getSpelling >=> unpack ) [0..n-1]
-  argtypes <- mapM (getArgument c >=> getType >=> getTypeSpelling >=> unpack ) [0..n-1]
-  return (Sig op (zipWith Param argtypes args))
 
 getLists :: InpParams -> Map String String -> Map String String -> String -> IO [Sig]
 getLists ps opmap constmap filename = do

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module ConstMap (getConstMap) where
+module PIParser.ConstMap (getConstMap) where
 
 import Clang
 import Clang.TranslationUnit (getCursor)
@@ -16,8 +16,8 @@ import Data.List (nub, partition, intercalate)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import Data.Char
-import ClangUtils
-import DataTypes
+import PIParser.ClangUtils
+import PIParser.DataTypes
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)
 toMap filename c = do

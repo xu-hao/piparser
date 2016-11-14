@@ -20,11 +20,19 @@ Clone git repo:
 
     git clone https://github.com/xu-hao/piparser
 
-Go to the `pep` directory:
+Go to the `piparser-common` directory:
 
-    cd pep
+    cd piparser-common
 
-In the `pep` directory, run
+In the `piparser-common` directory, run
+
+    cabal install
+
+Go to the `piparser-pep` directory:
+
+    cd piparser-pep
+
+In the `piparser-pep` directory, run
 
     cabal install
 
@@ -32,12 +40,17 @@ In the `pep` directory, run
 
 (To generate signatures for iRODS plugin operations, see next section.)
 
-    piparser <input file>
+    piparser-pep <piparser-common input file> <input file>
+
+Piparser-common input file format:
+
+    {
+      "headers" : [<include path>]
+    }
 
 Input file format:
 
     {
-      "headers" : [<include path>],
       "out" : <output file>,
       "groupList" : [
         {
@@ -60,4 +73,4 @@ It looks for all files matching `<file pattern>` in the `<directory>`. Inside th
 
 Assuming that iRODS source code is in the `../../irods` directory, or replace `../../irods` with the directory where iRODS source code is in `test/inp.json`.
 
-    dist/build/piparser/piparser test/inp.json
+    dist/build/piparser-pep/piparser-pep ../piparser-common/test/com.json test/inp.json

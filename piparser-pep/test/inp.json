@@ -1,5 +1,4 @@
 {
-  "headers" : ["/usr/include/irods", "/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "/opt/irods-externals/boost1.60.0-0/include", "/opt/irods-externals/jansson2.7-0/include"],
   "out" : "out.json",
   "groupList" : [
     {

@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
-module OpMap (getOpMap) where
+module PIParser.PEP.OpMap (getOpMap) where
 
 import Clang
 import Clang.TranslationUnit (getCursor)
@@ -14,19 +14,14 @@ import Data.Maybe
 import Data.Vector.Storable (toList)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
-import ClangUtils
-import Templates
-import DataTypes
+import PIParser.ClangUtils
+import PIParser.Templates
+import PIParser.DataTypes
 
 
 toMap :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m (String, String)
 toMap c = do
-    [desl] <- toList <$> getChildren c
-    [desl1] <- toList <$> getChildren desl
-    sp <- getSpelling desl1 >>= unpack
-    if sp == "add_operation"
-      then do
-        desl2 <- toList <$> getChildren desl1
+        desl2 <- toList <$> getChildren c
         op <- getSpelling (desl2 !! 1) >>= unpack
         [desl3] <- toList <$> getChildren (desl2 !! 2)
         [desl4] <- toList <$> getChildren desl3
@@ -38,8 +33,6 @@ toMap c = do
         [desl9] <- toList <$> getChildren desl8
         function <- getSpelling desl9 >>= unpack
         return (op, function)
-      else do
-        return ("", "")
 
 getOpMap :: InpParams -> String -> IO (Map String String)
 getOpMap ps filename = do
@@ -48,12 +41,18 @@ getOpMap ps filename = do
       printDiagnostics s
       sdl <- toList <$> getDeclarations s
       let sdl1 = $(filterByKind [p|FunctionDeclCursor|] [|sdl|])
-      sdl2 <- $(filterBySpelling [p|"plugin_factory"|] [|sdl1|])
-      sdl3 <- toList <$> (getDefinition (head sdl2) >>= getChildren)
+      [sdl2] <- $(filterBySpelling [p|"plugin_factory"|] [|sdl1|])
+      sdl3 <- toList <$> (getDefinition sdl2 >>= getChildren)
       let [sdl4] = $(filterByKind [p|CompoundStmtCursor|] [|sdl3|])
       sdl5 <- toList <$> getChildren sdl4
       let sdl6 = $(filterByKind [p|UnexposedExprCursor|] [|sdl5|])
-      sdl7 <- filter (\(a,_) -> a /= "") <$> mapM toMap sdl6
-      return (fromList sdl7)
+      sdl7 <- mapM (\c -> do
+        [desl] <- toList <$> getChildren c
+        [desl1] <- toList <$> getChildren desl
+        return desl1
+        ) sdl6
+      sdl8 <- $(filterBySpelling [p|"add_operation"|] [|sdl7|])
+      sdl9 <- mapM toMap sdl8
+      return (fromList sdl9)
       )
     return (fromMaybe (error filename) lists)
