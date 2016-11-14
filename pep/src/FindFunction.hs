@@ -40,7 +40,7 @@ getLists :: Map String String -> Map String String -> String -> IO [Sig]
 getLists opmap constmap filename = do
     let opfunctions = toList opmap
     putStrLn ("parsing " ++ filename)
-    lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record", "-DRODS_SERVER", "-I/usr/include/irods"] (\ s -> do
+    lists <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-I/usr/include/irods"] (\ s -> do
       c <- getCursor s
       sdl <- topFuncDeclList c
       sdl1 <- filterM isDefinition sdl

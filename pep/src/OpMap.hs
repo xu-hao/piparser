@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
 module OpMap (getOpMap) where
 
@@ -15,6 +15,7 @@ import Data.Vector.Storable (toList)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import ClangUtils
+import Templates
 
 
 toMap :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m (String, String)
@@ -42,24 +43,15 @@ toMap c = do
 getOpMap :: String -> IO (Map String String)
 getOpMap filename = do
     putStrLn ("parsing " ++ filename ++ " for operation map")
-    lists <- parseSourceFile filename ["-Xclang", "-detailed-preprocessing-record", "-DRODS_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-I/opt/irods-externals/jansson2.7-0/include", "-std=c++11"] (\ s -> do
+    lists <- parseSourceFile filename ["-Xclang", "-DRODS_SERVER", "-I/usr/include/irods", "-I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "-I/opt/irods-externals/boost1.60.0-0/include", "-std=c++11"] (\ s -> do
       printDiagnostics s
       sdl <- toList <$> getDeclarations s
-      let sdl1 = filter (\c -> case getKind c of
-                                FunctionDeclCursor -> True
-                                _ -> False) sdl
-      sdl2 <- filterM (\c -> do
-                    sp <- getSpelling c >>= unpack
-                    return (sp == "plugin_factory")) sdl1
+      let sdl1 = $(filterByKind [p|FunctionDeclCursor|] [|sdl|])
+      sdl2 <- $(filterBySpelling [p|"plugin_factory"|] [|sdl1|])
       sdl3 <- toList <$> (getDefinition (head sdl2) >>= getChildren)
-      let [sdl4] = filter (\c -> case getKind c of
-                                        CompoundStmtCursor -> True
-                                        _ -> False) sdl3
+      let [sdl4] = $(filterByKind [p|CompoundStmtCursor|] [|sdl3|])
       sdl5 <- toList <$> getChildren sdl4
-      sdl6 <- filterM (\c -> do
-                            return (case getKind c of
-                                      UnexposedExprCursor -> True
-                                      _ -> False)) sdl5
+      let sdl6 = $(filterByKind [p|UnexposedExprCursor|] [|sdl5|])
       sdl7 <- filter (\(a,_) -> a /= "") <$> mapM toMap sdl6
       return (fromList sdl7)
       )

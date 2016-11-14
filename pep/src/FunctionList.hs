@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
 module FunctionList where
 
@@ -21,6 +21,7 @@ import System.IO
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy as B
 import Data.Map (Map, fromList, member, partitionWithKey, keys, (!), mapWithKey)
+import Templates
 
 topMacroDefList :: (ClangBase m, MonadIO m) => FilePath -> Cursor s' -> ClangT s m (Map String String)
 topMacroDefList fp c = do
@@ -37,31 +38,23 @@ topMacroDefList fp c = do
       BS.hGet h (c2 - c1))
     let val = BS.unpack bs
     return (key, drop (length key + 1) val)
-    ) (filter (\ c -> case getKind c of
-              MacroDefinitionCursor -> True
-              _ -> False) clist)
+    ) $(filterByKind [p|MacroDefinitionCursor|] [|clist|])
   return (fromList (filter (\(s, _) -> drop (length s - 3) s == "_PI") mdl))
 
 topStructDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [String]
 topStructDeclList c = do
   clist <- toList <$> getChildren c
-  sdl <- mapM (getSpelling >=> unpack) (filter (\ c -> case getKind c of
-              StructDeclCursor -> True
-              _ -> False) clist)
+  sdl <- mapM (getSpelling >=> unpack) $(filterByKind [p|StructDeclCursor|] [|clist|])
   return sdl
 
 topTypedefDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [String]
 topTypedefDeclList c = do
   clist <- toList <$> getChildren c
-  sdl <- mapM (getSpelling >=> unpack) (filter (\ c -> case getKind c of
-              TypedefDeclCursor -> True
-              _ -> False) clist)
+  sdl <- mapM (getSpelling >=> unpack) $(filterByKind [p|TypedefDeclCursor|] [|clist|])
   return (map (\s -> take (length s - 2) s) sdl)
 
 
 topFuncDeclList :: (ClangBase m, MonadIO m) => Cursor s' -> ClangT s m [Cursor s]
 topFuncDeclList c = do
   clist <- toList <$> getChildren c
-  return (filter (\ c -> case getKind c of
-      FunctionDeclCursor -> True
-      _ -> False) clist)
+  return $(filterByKind [p|FunctionDeclCursor|] [|clist|])

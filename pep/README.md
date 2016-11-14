@@ -1,12 +1,14 @@
 C++ code summary utilities, written using `libclang` and the [`LibClang`](https://hackage.haskell.org/package/LibClang) Haskell package.
 
+This program generates a JSON representation of all plugin operations.
+
 ## Ubuntu 16.04
 
 ### Install dependencies
 
 Install system-provided packages
 
-    apt install cabal-install c2hs g++
+    apt install cabal-install c2hs g++ clang
 
 Install iRODS dev package.
 
@@ -33,8 +35,8 @@ In the `pep` directory, run
     piparser <output file> (<sigature group name> <signature group type> <file pattern> <directory> <op file> <const file>)*
 
 `<signature group type>` can be `api` or `<empty string>`.
-It builds a const map of op to op name from `<const file>`.
-It builds an op map of function name to op from `<op file>`.
+In the general case, it builds a const map of op to op name from `<const file>` and an op map of op to function name from `<op file>`.
+In the case of `api`, only an op map from op name to function name is built.
 It looks for all files matching `<file pattern>` in the `<directory>`. Inside those files, it looks for functions in the op map.
 
 ### Generate signatures

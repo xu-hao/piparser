@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, TemplateHaskell #-}
 
 module OpMap2 (getOpMap2) where
 
@@ -15,7 +15,7 @@ import Data.Vector.Storable (toList)
 import System.IO
 import Data.Map (Map, fromList, member, partitionWithKey, keys)
 import ClangUtils
-
+import Templates
 
 toMap :: (ClangBase m, MonadIO m) => String -> Cursor s' -> ClangT s m (String, String)
 toMap filename c = do
@@ -45,12 +45,8 @@ getOpMap2 filename = do
       printDiagnostics s
       c <- getCursor s
       chl <- toList <$> getChildren c
-      let chl2 = filter (\c -> case getKind c of
-                        VarDeclCursor -> True
-                        _ -> False) chl
-      [sdl2] <- filterM (\c -> do
-                    sp <- getSpelling c >>= unpack
-                    return (sp == "server_api_table_inp")) chl2
+      let chl2 = $(filterByKind [p|VarDeclCursor|] [|chl|])
+      [sdl2] <- $(filterBySpelling [p|"server_api_table_inp"|] [|chl2|]) 
       [_, _, sdl3] <- toList <$> (getChildren sdl2)
       [sdl4] <- toList <$> (getChildren sdl3)
       sdl5 <- toList <$> (getChildren sdl4)
