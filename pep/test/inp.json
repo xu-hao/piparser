@@ -1,0 +1,50 @@
+{
+  "headers" : ["/usr/include/irods", "/usr/lib/llvm-3.8/lib/clang/3.8.0/include/", "/opt/irods-externals/boost1.60.0-0/include", "/opt/irods-externals/jansson2.7-0/include"],
+  "out" : "out.json",
+  "groupList" : [
+    {
+      "name" : "auth",
+       "ty" : "" ,
+       "pattern" : "*.cpp",
+       "directory" : "../../irods/plugins/auth/native/",
+       "opFile" : "../../irods/plugins/auth/native/libnative.cpp",
+       "constFile" : "../../irods/lib/core/include/irods_auth_constants.hpp"
+    },
+    {
+      "name" : "resource",
+      "ty" : "",
+      "pattern" : "*.cpp",
+      "directory" : "../../irods/plugins/resources/unixfilesystem/",
+      "opFile" : "../../irods/plugins/resources/unixfilesystem/libunixfilesystem.cpp",
+      "constFile" : "../../irods/server/core/include/irods_resource_constants.hpp"
+
+
+    },
+    {
+      "name" : "database",
+      "ty" : "",
+      "pattern" : "db_plugin.cpp" ,
+      "directory" : "../../irods/plugins/database/src/",
+      "opFile" : "../../irods/plugins/database/src/db_plugin.cpp",
+      "constFile" : "../../irods/server/core/include/irods_database_constants.hpp"
+
+    },
+    {
+      "name" : "network",
+      "ty" : "",
+      "pattern" : "*.cpp",
+      "directory" : "../../irods/plugins/network/tcp/",
+      "opFile" : "../../irods/plugins/network/tcp/libtcp.cpp",
+      "constFile" : "../../irods/lib/core/include/irods_network_constants.hpp"
+
+    },
+    {
+      "name" : "api",
+      "ty" : "api",
+      "pattern" : "rs*.cpp",
+      "directory" : "../../irods/server/api/src/",
+      "opFile" : "../../irods/lib/api/include/apiTable.hpp",
+      "constFile" : ""
+    }
+  ]
+  }
